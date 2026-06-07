@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamus & Kuis Bahasa Inggris</title>
+<script src="data.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);min-height:100vh;}
+/* NAV */
+.nav{display:flex;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1);align-items:center;flex-wrap:wrap;}
+.nav-btn{flex:1;padding:11px 4px;border:none;background:transparent;color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;cursor:pointer;min-width:60px;}
+.nav-btn.active{color:white;border-bottom:3px solid #f5a623;background:rgba(255,255,255,0.05);}
+.theme-btn{padding:10px 12px;border:none;background:transparent;font-size:18px;cursor:pointer;color:white;}
+/* HEADER */
+.header{background:linear-gradient(90deg,#e94560,#f5a623);padding:16px 16px 12px;text-align:center;}
+.header small{color:rgba(255,255,255,0.8);font-size:11px;letter-spacing:3px;text-transform:uppercase;}
+.header h1{color:white;font-size:20px;font-weight:800;margin:4px 0;}
+.header p{color:rgba(255,255,255,0.85);font-size:12px;}
+/* SCREENS */
+.screen{display:none;}.screen.active{display:block;}
+/* CONTROLS */
+.controls{padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap;}
+.controls input,.controls select{flex:1;min-width:130px;padding:10px 12px;border-radius:10px;border:none;font-size:13px;background:rgba(255,255,255,0.12);color:white;outline:none;}
+.controls select option{color:#000;}
+.controls input::placeholder{color:rgba(255,255,255,0.5);}
+.btn-dl{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,#e94560,#f5a623);color:white;font-weight:700;font-size:12px;cursor:pointer;}
+.stats{padding:4px 14px 8px;color:rgba(255,255,255,0.5);font-size:12px;}
+.stats b{color:#f5a623;}
+/* GRID KARTU */
+.grid{padding:4px 12px 30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.card{background:linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.06));border-radius:14px;padding:12px 10px 10px;min-height:95px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);cursor:pointer;transition:transform 0.2s,background 0.3s;box-shadow:0 4px 15px rgba(0,0,0,0.3);position:relative;}
+.card:hover{transform:translateY(-2px);}
+.card.flipped{background:linear-gradient(135deg,#f5a623,#e94560);}
+.card.favorited::after{content:'⭐';position:absolute;top:6px;right:28px;font-size:10px;}
+.card-top{display:flex;justify-content:space-between;align-items:center;}
+.card-num{font-size:10px;color:rgba(255,255,255,0.4);font-weight:600;}
+.card-hint{font-size:9px;color:rgba(255,255,255,0.35);}
+.card-word{color:white;font-weight:800;font-size:14px;line-height:1.2;margin-bottom:3px;}
+.card-pron{color:#f5a623;font-size:10px;font-style:italic;}
+.card.flipped .card-pron{color:rgba(255,255,255,0.8);}
+.card-meaning{color:white;font-weight:800;font-size:14px;margin-bottom:2px;}
+.card-sub{font-size:10px;color:rgba(255,255,255,0.6);}
+.cat-badge{display:inline-block;background:rgba(245,166,35,0.2);color:#f5a623;font-size:9px;padding:2px 6px;border-radius:99px;margin-bottom:4px;font-weight:600;}
+.card-actions{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+.speak-btn,.fav-btn,.detail-btn{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:3px 7px;font-size:10px;cursor:pointer;}
+.speak-btn:active,.fav-btn:active,.detail-btn:active{background:rgba(245,166,35,0.4);}
+/* MODAL DETAIL */
+#detailModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;}
+#detailModal.show{display:flex;}
+.detail-box{background:#16213e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:24px 20px;max-width:360px;width:92%;max-height:85vh;overflow-y:auto;}
+.detail-word{color:white;font-size:26px;font-weight:800;margin-bottom:4px;}
+.detail-pron{color:#f5a623;font-size:13px;font-style:italic;margin-bottom:12px;}
+.detail-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+.detail-label{color:rgba(255,255,255,0.5);font-size:11px;min-width:70px;padding-top:2px;}
+.detail-val{color:white;font-size:13px;font-weight:600;flex:1;}
+.detail-example{background:rgba(255,255,255,0.07);border-radius:10px;padding:10px 12px;margin:10px 0;}
+.detail-example p{color:rgba(255,255,255,0.9);font-size:13px;line-height:1.6;}
+.detail-example small{color:rgba(255,255,255,0.5);font-size:11px;}
+.detail-close{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(90deg,#e94560,#f5a623);color:white;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;}
+.detail-speak{background:rgba(255,255,255,0.1);border:none;color:white;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;margin-bottom:12px;}
+/* KUIS */
+.quiz-wrap{padding:16px;max-width:480px;margin:0 auto;}
+.card-box{background:rgba(255,255,255,0.07);border-radius:20px;padding:22px 18px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+.mode-btn{display:block;width:100%;padding:14px;margin-bottom:10px;border-radius:14px;border:none;cursor:pointer;font-size:14px;font-weight:700;transition:transform 0.15s;}
+.mode-btn:hover{transform:scale(1.02);}
+.mode-en{background:linear-gradient(90deg,#e94560,#c0392b);color:white;}
+.mode-id{background:linear-gradient(90deg,#f5a623,#e67e22);color:white;}
+.mode-mix{background:linear-gradient(90deg,#6c63ff,#4834d4);color:white;}
+.mode-cat{background:linear-gradient(90deg,#27ae60,#1e8449);color:white;}
+.mode-desc{font-size:11px;font-weight:400;opacity:0.85;display:block;margin-top:2px;}
+.cat-select-wrap{margin-top:8px;display:none;}
+.cat-select-wrap select{width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;background:rgba(255,255,255,0.12);color:white;outline:none;}
+.cat-select-wrap select option{color:#000;}
+.progress-bar-wrap{background:rgba(255,255,255,0.1);border-radius:99px;height:8px;margin-bottom:14px;overflow:hidden;}
+.progress-bar{height:8px;border-radius:99px;background:linear-gradient(90deg,#e94560,#f5a623);transition:width 0.4s;}
+.progress-text{display:flex;justify-content:space-between;color:rgba(255,255,255,0.5);font-size:11px;margin-bottom:6px;}
+.score-badge{display:flex;gap:10px;justify-content:center;margin-bottom:16px;}
+.badge{background:rgba(255,255,255,0.1);border-radius:10px;padding:8px 14px;text-align:center;}
+.badge-val{font-size:18px;font-weight:800;color:white;}
+.badge-lbl{font-size:10px;color:rgba(255,255,255,0.5);}
+.badge.green .badge-val{color:#2ecc71;}
+.badge.red .badge-val{color:#e94560;}
+.q-label{color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.q-word{color:white;font-size:24px;font-weight:800;margin-bottom:6px;line-height:1.2;}
+.q-pron{color:#f5a623;font-size:13px;font-style:italic;margin-bottom:18px;}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.opt-btn{padding:13px 8px;border-radius:12px;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center;line-height:1.3;}
+.opt-btn:hover:not(:disabled){background:rgba(255,255,255,0.15);}
+.opt-btn.correct{background:linear-gradient(135deg,#27ae60,#2ecc71);border-color:#27ae60;}
+.opt-btn.wrong{background:linear-gradient(135deg,#c0392b,#e94560);border-color:#c0392b;}
+.opt-btn.reveal{background:rgba(39,174,96,0.2);border-color:#27ae60;}
+.opt-btn:disabled{cursor:default;}
+.feedback{text-align:center;font-size:14px;font-weight:700;min-height:22px;margin-bottom:12px;}
+.feedback.correct{color:#2ecc71;}.feedback.wrong{color:#e94560;}
+.next-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(90deg,#e94560,#f5a623);color:white;font-size:14px;font-weight:800;cursor:pointer;}
+.next-btn:disabled{opacity:0.3;cursor:default;}
+.result-emoji{font-size:56px;text-align:center;margin:8px 0;}
+.result-title{color:white;font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;}
+.result-sub{color:rgba(255,255,255,0.6);font-size:13px;text-align:center;margin-bottom:16px;}
+.result-score{font-size:44px;font-weight:800;text-align:center;color:#f5a623;margin-bottom:4px;}
+.result-detail{color:rgba(255,255,255,0.5);font-size:12px;text-align:center;margin-bottom:16px;}
+.replay-btn{width:100%;padding:13px;border-radius:12px;border:none;margin-bottom:10px;background:linear-gradient(90deg,#6c63ff,#e94560);color:white;font-size:14px;font-weight:800;cursor:pointer;}
+.back-btn{width:100%;padding:11px;border-radius:12px;border:2px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;cursor:pointer;}
+.timer-wrap{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.timer-bar-wrap{flex:1;background:rgba(255,255,255,0.1);border-radius:99px;height:6px;overflow:hidden;}
+.timer-bar{height:6px;border-radius:99px;background:#2ecc71;transition:width 0.1s linear;}
+.timer-num{color:rgba(255,255,255,0.6);font-size:12px;min-width:24px;text-align:right;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.exit-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;}
+/* STATISTIK */
+.stat-wrap{padding:16px;max-width:500px;margin:0 auto;}
+.stat-card{background:rgba(255,255,255,0.07);border-radius:16px;padding:18px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.1);}
+.stat-title{color:white;font-size:15px;font-weight:800;margin-bottom:14px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.stat-label{color:rgba(255,255,255,0.6);font-size:13px;}
+.stat-val{color:#f5a623;font-size:16px;font-weight:800;}
+.stat-bar-wrap{background:rgba(255,255,255,0.1);border-radius:99px;height:8px;flex:1;margin:0 10px;overflow:hidden;}
+.stat-bar-fill{height:8px;border-radius:99px;background:linear-gradient(90deg,#e94560,#f5a623);}
+.wrong-word{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:6px;}
+.wrong-word-text{color:white;font-size:13px;font-weight:600;}
+.wrong-count{background:#e94560;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;}
+.clear-stat-btn{width:100%;padding:11px;border-radius:10px;border:2px solid rgba(233,69,96,0.5);background:transparent;color:#e94560;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;}
+/* HAFALAN */
+.hafalan-wrap{padding:16px;max-width:480px;margin:0 auto;}
+.flash-card{background:linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.06));border-radius:20px;padding:30px 20px;text-align:center;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.3);margin-bottom:16px;min-height:200px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;transition:background 0.3s;}
+.flash-card.show-answer{background:linear-gradient(135deg,#6c63ff,#4834d4);}
+.flash-num{color:rgba(255,255,255,0.4);font-size:12px;margin-bottom:10px;}
+.flash-cat{display:inline-block;background:rgba(245,166,35,0.2);color:#f5a623;font-size:10px;padding:3px 8px;border-radius:99px;margin-bottom:12px;font-weight:600;}
+.flash-word{color:white;font-size:28px;font-weight:800;margin-bottom:8px;}
+.flash-pron{color:#f5a623;font-size:13px;font-style:italic;margin-bottom:12px;}
+.flash-meaning{color:white;font-size:20px;font-weight:700;margin-top:8px;}
+.flash-hint{color:rgba(255,255,255,0.5);font-size:12px;margin-top:8px;}
+.flash-nav{display:flex;gap:10px;margin-bottom:12px;}
+.flash-btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:13px;font-weight:700;cursor:pointer;}
+.flash-prev{background:rgba(255,255,255,0.1);color:white;}
+.flash-next{background:linear-gradient(90deg,#e94560,#f5a623);color:white;}
+.flash-known{background:linear-gradient(90deg,#27ae60,#2ecc71);color:white;}
+.flash-progress{text-align:center;color:rgba(255,255,255,0.5);font-size:12px;margin-bottom:8px;}
+.flash-filter{padding:0 0 12px;}
+.flash-filter select{width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;background:rgba(255,255,255,0.12);color:white;outline:none;}
+.flash-filter select option{color:#000;}
+.flash-actions{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
+.flash-speak{background:rgba(255,255,255,0.1);border:none;color:white;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;}
+.flash-fav{background:rgba(245,166,35,0.2);border:none;color:#f5a623;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;}
+/* PROGRESS */
+.prog-wrap{padding:16px;max-width:500px;margin:0 auto;}
+.prog-card{background:rgba(255,255,255,0.07);border-radius:16px;padding:18px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.1);}
+.prog-title{color:white;font-size:15px;font-weight:800;margin-bottom:14px;}
+.prog-circle-wrap{display:flex;justify-content:center;margin-bottom:16px;}
+.prog-circle{width:120px;height:120px;border-radius:50%;background:conic-gradient(#f5a623 0deg, rgba(255,255,255,0.1) 0deg);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+.prog-pct{color:white;font-size:28px;font-weight:800;}
+.prog-pct-label{color:rgba(255,255,255,0.5);font-size:11px;}
+.prog-cat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.prog-cat-name{color:rgba(255,255,255,0.7);font-size:12px;min-width:110px;}
+.prog-cat-bar-wrap{flex:1;background:rgba(255,255,255,0.1);border-radius:99px;height:8px;overflow:hidden;}
+.prog-cat-bar{height:8px;border-radius:99px;background:linear-gradient(90deg,#6c63ff,#f5a623);}
+.prog-cat-pct{color:#f5a623;font-size:11px;font-weight:700;min-width:32px;text-align:right;}
+.reset-prog-btn{width:100%;padding:11px;border-radius:10px;border:2px solid rgba(233,69,96,0.5);background:transparent;color:#e94560;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;}
+/* EXIT MODAL */
+#exitModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:998;align-items:center;justify-content:center;}
+#exitModal.show{display:flex;}
+.modal-box{background:#16213e;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:26px 22px;max-width:300px;width:90%;text-align:center;}
+.modal-yes{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(90deg,#e94560,#f5a623);color:white;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+.modal-no{width:100%;padding:12px;border-radius:10px;border:2px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.7);font-size:14px;cursor:pointer;}
+.footer{text-align:center;color:rgba(255,255,255,0.3);font-size:11px;padding:10px 0 24px;}
+
+/* ===== LIGHT MODE ===== */
+body.light{background:linear-gradient(135deg,#f0f4ff,#e8edf5,#dce6f0);}
+body.light .nav{background:rgba(255,255,255,0.9);border-bottom:1px solid #ddd;}
+body.light .nav-btn{color:#999;}
+body.light .nav-btn.active{color:#e94560;border-bottom-color:#e94560;background:rgba(233,69,96,0.05);}
+body.light .theme-btn{color:#333;}
+body.light .controls input,body.light .controls select{background:white;color:#333;border:1px solid #ddd;}
+body.light .controls input::placeholder{color:#aaa;}
+body.light .stats{color:#999;}
+body.light .card{background:white;border:1px solid #e8e8e8;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+body.light .card.flipped{background:linear-gradient(135deg,#f5a623,#e94560);}
+body.light .card-word{color:#1a1a2e;}
+body.light .card.flipped .card-word,body.light .card.flipped .card-meaning,body.light .card.flipped .card-sub{color:white;}
+body.light .card-meaning{color:#1a1a2e;}
+body.light .card-sub{color:#999;}
+body.light .card-num{color:#ccc;}
+body.light .card-hint{color:#ccc;}
+body.light .speak-btn,.light .fav-btn,.light .detail-btn{background:rgba(0,0,0,0.07);color:#333;}
+body.light .footer{color:#bbb;}
+body.light .card-box,body.light .stat-card,body.light .prog-card,body.light .flash-card{background:white;border:1px solid #e8e8e8;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+body.light .flash-card.show-answer{background:linear-gradient(135deg,#6c63ff,#4834d4);}
+body.light .opt-btn{background:#f5f5f5;border:2px solid #e0e0e0;color:#333;}
+body.light .badge{background:#f5f5f5;}
+body.light .badge-val{color:#333;}
+body.light .badge-lbl{color:#aaa;}
+body.light .q-word{color:#1a1a2e;}
+body.light .q-label,body.light .progress-text span,body.light .timer-num{color:#aaa;}
+body.light .progress-bar-wrap,body.light .timer-bar-wrap,body.light .stat-bar-wrap,body.light .prog-cat-bar-wrap{background:#eee;}
+body.light .exit-btn{background:#f5f5f5;border:1px solid #ddd;color:#666;}
+body.light #exitModal .modal-box,body.light #detailModal .detail-box{background:white;border:1px solid #e0e0e0;}
+body.light .modal-no,body.light .back-btn{border-color:#ddd;color:#666;}
+body.light .result-title{color:#1a1a2e;}
+body.light .result-sub,body.light .result-detail{color:#999;}
+body.light .stat-label,body.light .flash-hint,body.light .flash-num,body.light .flash-progress{color:#999;}
+body.light .stat-title,body.light .prog-title,body.light .flash-word{color:#1a1a2e;}
+body.light .flash-card .flash-word{color:#1a1a2e;}
+body.light .flash-card.show-answer .flash-word,body.light .flash-card.show-answer .flash-meaning,body.light .flash-card.show-answer .flash-pron{color:white;}
+body.light .wrong-word{background:#f9f9f9;}
+body.light .wrong-word-text{color:#333;}
+body.light .flash-filter select{background:white;color:#333;border:1px solid #ddd;}
+body.light .flash-prev{background:#f0f0f0;color:#333;}
+body.light .flash-speak{background:#f0f0f0;color:#333;}
+body.light .prog-cat-name{color:#666;}
+body.light #detailModal .detail-word{color:#1a1a2e;}
+body.light #detailModal .detail-val{color:#333;}
+body.light #detailModal .detail-label{color:#aaa;}
+body.light #detailModal .detail-example{background:#f9f9f9;}
+body.light #detailModal .detail-example p{color:#333;}
+body.light #detailModal .detail-speak{background:#f0f0f0;color:#333;}
+</style>
+</head>
+<body>
+
+<!-- EXIT MODAL -->
+<div id="exitModal">
+  <div class="modal-box">
+    <div style="font-size:34px;margin-bottom:10px">🚪</div>
+    <div style="color:white;font-size:16px;font-weight:800;margin-bottom:8px">Keluar Kuis?</div>
+    <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:18px">Progress kuis akan hilang.</div>
+    <button class="modal-yes" onclick="doExit()">Ya, Keluar</button>
+    <button class="modal-no" onclick="cancelExit()">Lanjut Kuis</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div id="detailModal">
+  <div class="detail-box">
+    <div class="detail-word" id="dWord"></div>
+    <div class="detail-pron" id="dPron"></div>
+    <button class="detail-speak" onclick="speak(currentDetail[1])">🔊 Dengar Pengucapan</button>
+    <div class="detail-row"><span class="detail-label">🇮🇩 Arti</span><span class="detail-val" id="dMeaning"></span></div>
+    <div class="detail-row"><span class="detail-label">🗂️ Kategori</span><span class="detail-val" id="dCat"></span></div>
+    <div class="detail-row"><span class="detail-label">🔤 Jenis</span><span class="detail-val" id="dType"></span></div>
+    <div class="detail-example" id="dExampleWrap">
+      <small>📝 Contoh kalimat:</small>
+      <p id="dExample"></p>
+      <small id="dExampleID" style="color:rgba(255,255,255,0.4)"></small>
+    </div>
+    <button class="detail-close" onclick="closeDetail()">Tutup</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" id="navKamus" onclick="switchTab('Kamus')">📖 Kamus</button>
+  <button class="nav-btn" id="navKuis" onclick="switchTab('Kuis')">🧠 Kuis</button>
+  <button class="nav-btn" id="navHafalan" onclick="switchTab('Hafalan')">🔁 Hafalan</button>
+  <button class="nav-btn" id="navProgress" onclick="switchTab('Progress')">📈 Progress</button>
+  <button class="nav-btn" id="navStatistik" onclick="switchTab('Statistik')">📊 Statistik</button>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+</div>
+
+<!-- ===== KAMUS ===== -->
+<div class="screen active" id="screenKamus">
+  <div class="header"><small>Panduan Belajar</small><h1>2000 Kosakata Bahasa Inggris</h1><p>Ketuk kartu untuk melihat artinya!</p></div>
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="🔍 Cari kata..." oninput="filterCards()">
+    <select id="catSelect" onchange="filterCards()">
+      <option value="all">Semua Kategori</option>
+      <option value="Sapaan">Sapaan</option><option value="Perasaan">Perasaan</option>
+      <option value="Keluarga">Keluarga</option><option value="Tubuh">Tubuh & Kesehatan</option>
+      <option value="Makanan">Makanan & Minuman</option><option value="Rumah">Rumah & Perabot</option>
+      <option value="Pakaian">Pakaian</option><option value="Pekerjaan">Pekerjaan</option>
+      <option value="Sekolah">Sekolah</option><option value="Teknologi">Teknologi</option>
+      <option value="Transportasi">Transportasi</option><option value="Alam">Alam & Cuaca</option>
+      <option value="Hewan">Hewan</option><option value="Waktu">Waktu & Hari</option>
+      <option value="Tempat">Tempat</option><option value="Sifat">Kata Sifat</option>
+      <option value="KataKerja">Kata Kerja</option><option value="Belanja">Belanja & Uang</option>
+      <option value="Olahraga">Olahraga & Hobi</option><option value="Lainnya">Lainnya</option>
+    </select>
+    <button class="btn-dl" onclick="downloadCSV()">⬇️ CSV</button>
+    <button class="btn-dl" style="background:linear-gradient(90deg,#6c63ff,#4834d4)" onclick="downloadPDF()">⬇️ PDF</button>
+  </div>
+  <div class="stats">Menampilkan <b id="countLabel">0</b> kata</div>
+  <div class="grid" id="grid"></div>
+  <div class="footer">Ketuk kartu • 🔊 Dengar • ℹ️ Detail • ⭐ Favorit</div>
+</div>
+
+<!-- ===== KUIS ===== -->
+<div class="screen" id="screenKuis">
+  <div class="header"><small>Uji Kemampuan</small><h1>🧠 Kuis Kosakata</h1><p>2000 kata • 4 mode • Timer 10 detik</p></div>
+  <div class="quiz-wrap">
+    <div id="modeScreen">
+      <div class="card-box">
+        <p style="color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:14px;text-align:center">Pilih mode kuis:</p>
+        <button class="mode-btn mode-en" onclick="startQuiz('en')">🇺🇸 Inggris → Indonesia<span class="mode-desc">Lihat kata Inggris, pilih artinya</span></button>
+        <button class="mode-btn mode-id" onclick="startQuiz('id')">🇮🇩 Indonesia → Inggris<span class="mode-desc">Lihat kata Indonesia, pilih kata Inggrisnya</span></button>
+        <button class="mode-btn mode-mix" onclick="startQuiz('mix')">🔀 Mode Campuran<span class="mode-desc">Acak kedua mode sekaligus</span></button>
+        <button class="mode-btn mode-cat" onclick="toggleCatSelect()">🗂️ Kuis Per Kategori<span class="mode-desc">Pilih kategori tertentu</span></button>
+        <div class="cat-select-wrap" id="catSelectWrap">
+          <select id="quizCatSelect">
+            <option value="Sapaan">Sapaan</option><option value="Perasaan">Perasaan</option>
+            <option value="Keluarga">Keluarga</option><option value="Tubuh">Tubuh & Kesehatan</option>
+            <option value="Makanan">Makanan & Minuman</option><option value="Rumah">Rumah & Perabot</option>
+            <option value="Pakaian">Pakaian</option><option value="Pekerjaan">Pekerjaan</option>
+            <option value="Sekolah">Sekolah</option><option value="Teknologi">Teknologi</option>
+            <option value="Transportasi">Transportasi</option><option value="Alam">Alam & Cuaca</option>
+            <option value="Hewan">Hewan</option><option value="Waktu">Waktu & Hari</option>
+            <option value="Tempat">Tempat</option><option value="Sifat">Kata Sifat</option>
+            <option value="KataKerja">Kata Kerja</option><option value="Belanja">Belanja & Uang</option>
+            <option value="Olahraga">Olahraga & Hobi</option><option value="Lainnya">Lainnya</option>
+          </select>
+          <button class="mode-btn mode-cat" style="margin-top:8px;padding:10px" onclick="startQuizCat()">Mulai Kuis Kategori ini ▶</button>
+        </div>
+      </div>
+    </div>
+    <div id="quizActive" style="display:none">
+      <div class="card-box">
+        <div class="top-bar"><span id="progText" style="color:rgba(255,255,255,0.5);font-size:11px">Soal 1/20</span><button class="exit-btn" onclick="confirmExit()">✕ Keluar</button></div>
+        <div class="progress-text"><span></span><span id="progPct">0%</span></div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progBar" style="width:0%"></div></div>
+        <div class="score-badge">
+          <div class="badge green"><div class="badge-val" id="scoreBenar">0</div><div class="badge-lbl">✅ Benar</div></div>
+          <div class="badge red"><div class="badge-val" id="scoreSalah">0</div><div class="badge-lbl">❌ Salah</div></div>
+        </div>
+        <div class="timer-wrap"><div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div><div class="timer-num" id="timerNum">10</div></div>
+        <div class="q-label" id="qLabel">Apa artinya?</div>
+        <div class="q-word" id="qWord">—</div>
+        <div class="q-pron" id="qPron"></div>
+        <div class="options" id="optionsGrid"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()" disabled>Lanjut →</button>
+      </div>
+    </div>
+    <div id="resultScreen" style="display:none">
+      <div class="card-box">
+        <div class="result-emoji" id="resultEmoji">🎉</div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-sub" id="resultSub"></div>
+        <div class="result-score" id="resultScore">0/20</div>
+        <div class="result-detail" id="resultDetail"></div>
+        <button class="replay-btn" onclick="replayQuiz()">🔄 Main Lagi</button>
+        <button class="back-btn" onclick="backToMenu()">← Ganti Mode</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HAFALAN ===== -->
+<div class="screen" id="screenHafalan">
+  <div class="header"><small>Mode Belajar</small><h1>🔁 Mode Hafalan</h1><p>Flashcard satu per satu • Ketuk untuk lihat arti</p></div>
+  <div class="hafalan-wrap">
+    <div class="flash-filter">
+      <select id="hafalanCat" onchange="initHafalan()">
+        <option value="all">Semua Kategori</option>
+        <option value="fav">⭐ Favorit Saja</option>
+        <option value="Sapaan">Sapaan</option><option value="Perasaan">Perasaan</option>
+        <option value="Keluarga">Keluarga</option><option value="Tubuh">Tubuh & Kesehatan</option>
+        <option value="Makanan">Makanan & Minuman</option><option value="Rumah">Rumah & Perabot</option>
+        <option value="Pakaian">Pakaian</option><option value="Pekerjaan">Pekerjaan</option>
+        <option value="Sekolah">Sekolah</option><option value="Teknologi">Teknologi</option>
+        <option value="Transportasi">Transportasi</option><option value="Alam">Alam & Cuaca</option>
+        <option value="Hewan">Hewan</option><option value="Waktu">Waktu & Hari</option>
+        <option value="Tempat">Tempat</option><option value="Sifat">Kata Sifat</option>
+        <option value="KataKerja">Kata Kerja</option><option value="Belanja">Belanja & Uang</option>
+        <option value="Olahraga">Olahraga & Hobi</option><option value="Lainnya">Lainnya</option>
+      </select>
+    </div>
+    <div class="flash-progress" id="flashProgress">1 / 1000</div>
+    <div class="flash-card" id="flashCard" onclick="toggleFlash()">
+      <div class="flash-num" id="flashNum">#1</div>
+      <div class="flash-cat" id="flashCat">Sapaan</div>
+      <div class="flash-word" id="flashWord">Good morning</div>
+      <div class="flash-pron" id="flashPron">/gud MOR-ning/</div>
+      <div class="flash-meaning" id="flashMeaning" style="display:none"></div>
+      <div class="flash-hint" id="flashHint">Ketuk untuk lihat arti ▼</div>
+    </div>
+    <div class="flash-actions">
+      <button class="flash-speak" onclick="speak(hafalanList[hafalanIdx][1])">🔊 Dengar</button>
+      <button class="flash-fav" onclick="toggleFavHafalan()" id="favHafalanBtn">⭐ Favorit</button>
+      <button class="flash-speak" onclick="markKnown()" style="background:rgba(39,174,96,0.2);color:#2ecc71">✅ Hafal</button>
+    </div>
+    <div class="flash-nav">
+      <button class="flash-btn flash-prev" onclick="prevFlash()">← Sebelumnya</button>
+      <button class="flash-btn flash-next" onclick="nextFlash()">Berikutnya →</button>
+    </div>
+    <div style="text-align:center;color:rgba(255,255,255,0.4);font-size:11px">Tandai ✅ Hafal untuk lacak progress belajarmu</div>
+  </div>
+</div>
+
+<!-- ===== PROGRESS ===== -->
+<div class="screen" id="screenProgress">
+  <div class="header"><small>Perkembangan Belajar</small><h1>📈 Progress Belajar</h1><p>Lacak kata yang sudah kamu hafal</p></div>
+  <div class="prog-wrap" id="progWrap"></div>
+</div>
+
+<!-- ===== STATISTIK ===== -->
+<div class="screen" id="screenStatistik">
+  <div class="header"><small>Analisis Kuis</small><h1>📊 Statistik Kuis</h1><p>Pantau hasil belajarmu</p></div>
+  <div class="stat-wrap" id="statWrap"></div>
+</div>
+
+<script>
+// ============ DATA & STATE ============
+let favorites = JSON.parse(localStorage.getItem('favs')||'[]');
+let knownWords = JSON.parse(localStorage.getItem('known')||'[]');
+let quizStats  = JSON.parse(localStorage.getItem('qstats')||'{}');
+let hafalanList=[], hafalanIdx=0, hafalanShown=false;
+let currentDetail=null;
+
+const TOTAL=20, TIME=10;
+let mode,questions,qIndex,benar,salah,timerInterval,timeLeft,answered,correctAnswer;
+const shuffle=a=>[...a].sort(()=>Math.random()-0.5);
+
+// ============ TEMA ============
+function toggleTheme(){
+  const l=document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent=l?'☀️':'🌙';
+  localStorage.setItem('theme',l?'light':'dark');
+}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.getElementById('themeBtn').textContent='☀️';}
+
+// ============ TAB ============
+function switchTab(t){
+  ['Kamus','Kuis','Hafalan','Progress','Statistik'].forEach(s=>{
+    document.getElementById('screen'+s).classList.toggle('active',s===t);
+    document.getElementById('nav'+s).classList.toggle('active',s===t);
+  });
+  if(t==='Progress') renderProgress();
+  if(t==='Statistik') renderStatistik();
+  if(t==='Hafalan') initHafalan();
+}
+
+// ============ KAMUS ============
+function wordType(cat){
+  const m={KataKerja:'Kata Kerja',Sifat:'Kata Sifat',Sapaan:'Frasa Sapaan',Perasaan:'Kata Sifat / Emosi'};
+  return m[cat]||'Kata Benda / Umum';
+}
+const examples={
+  // SAPAAN
+  1:["Good morning! Did you sleep well?","Selamat pagi! Apakah kamu tidur nyenyak?"],
+  2:["Good afternoon! Want some coffee?","Selamat siang! Mau minum kopi?"],
+  3:["Good evening! How was your day?","Selamat malam! Bagaimana harimu?"],
+  4:["Good night! See you tomorrow.","Selamat malam! Sampai jumpa besok."],
+  5:["Hello! Is anyone home?","Halo! Ada orang di rumah?"],
+  6:["Hi! Long time no see!","Hai! Lama tidak bertemu!"],
+  7:["How are you? You look tired today.","Apa kabar? Kamu terlihat lelah hari ini."],
+  8:["Nice to meet you! Where are you from?","Senang bertemu kamu! Kamu dari mana?"],
+  9:["Goodbye! Take care on your way home.","Selamat tinggal! Hati-hati di jalan."],
+  10:["See you later! Don't forget to eat.","Sampai jumpa! Jangan lupa makan."],
+  11:["Take care! The weather looks bad today.","Jaga diri! Cuaca hari ini terlihat buruk."],
+  12:["How do you do? It's a pleasure to meet you.","Apa kabar? Senang sekali bisa bertemu Anda."],
+  13:["What's up? You seem really happy today!","Ada apa? Kamu terlihat sangat senang hari ini!"],
+  14:["Long time no see! How's your family?","Lama tidak bertemu! Bagaimana kabar keluargamu?"],
+  15:["Welcome back! We missed you so much.","Selamat datang kembali! Kami sangat merindukanmu."],
+  // PERASAAN
+  16:["I'm so happy because I passed the exam!","Saya sangat bahagia karena lulus ujian!"],
+  17:["Why do you look so sad today?","Kenapa kamu terlihat sangat sedih hari ini?"],
+  18:["Don't be angry, let's talk it out.","Jangan marah, mari kita bicarakan baik-baik."],
+  19:["Are you scared of the dark?","Apakah kamu takut gelap?"],
+  20:["I'm so excited about the trip tomorrow!","Saya sangat bersemangat dengan perjalanan besok!"],
+  21:["She looked nervous before her presentation.","Dia terlihat gugup sebelum presentasinya."],
+  22:["I'm bored. Want to watch a movie?","Saya bosan. Mau nonton film?"],
+  23:["You look tired. Have you been sleeping enough?","Kamu terlihat lelah. Apakah kamu cukup tidur?"],
+  24:["I was so surprised when she called me.","Saya sangat terkejut ketika dia menelepon saya."],
+  25:["I'm confused about this math problem.","Saya bingung dengan soal matematika ini."],
+  26:["I'm proud of you for never giving up.","Saya bangga padamu karena tidak pernah menyerah."],
+  27:["I'm grateful for everything I have.","Saya bersyukur atas semua yang saya miliki."],
+  28:["Do you feel lonely living alone?","Apakah kamu merasa kesepian tinggal sendiri?"],
+  29:["Don't be worried, everything will be okay.","Jangan khawatir, semua akan baik-baik saja."],
+  30:["I feel embarrassed when I speak in public.","Saya merasa malu ketika berbicara di depan umum."],
+  31:["Are you jealous of your friend's new phone?","Apakah kamu cemburu dengan HP baru temanmu?"],
+  32:["I'm curious — what's inside that box?","Saya penasaran — apa yang ada di dalam kotak itu?"],
+  33:["I feel so relaxed at the beach.","Saya merasa sangat santai di pantai."],
+  34:["Don't be disappointed, you did your best.","Jangan kecewa, kamu sudah berusaha sebaik mungkin."],
+  35:["Stay hopeful, good things are coming.","Tetaplah penuh harapan, hal baik akan datang."],
+  // KELUARGA
+  36:["My father cooks really well on weekends.","Ayah saya memasak sangat enak di akhir pekan."],
+  37:["My mother always knows when I'm upset.","Ibu saya selalu tahu ketika saya sedang kesal."],
+  38:["My brother borrowed my charger again!","Kakak/adik laki-laki saya meminjam charger saya lagi!"],
+  39:["My sister and I always fight over the TV.","Saya dan kakak/adik perempuan saya selalu berebut TV."],
+  40:["Their son just started walking!","Anak laki-laki mereka baru saja mulai berjalan!"],
+  41:["Her daughter is so good at singing.","Anak perempuannya sangat pandai bernyanyi."],
+  42:["My grandfather tells the best stories.","Kakek saya menceritakan kisah-kisah terbaik."],
+  43:["My grandmother makes the best food.","Nenek saya memasak makanan terlezat."],
+  44:["My uncle just bought a new car.","Paman saya baru saja membeli mobil baru."],
+  45:["My aunt always brings snacks when she visits.","Bibi saya selalu membawa camilan ketika berkunjung."],
+  46:["My cousin and I grew up together.","Saya dan sepupu saya tumbuh besar bersama."],
+  47:["Her husband surprises her with flowers every week.","Suaminya mengejutkannya dengan bunga setiap minggu."],
+  48:["His wife is a really talented doctor.","Istrinya adalah dokter yang sangat berbakat."],
+  49:["The baby won't stop crying tonight.","Bayinya tidak berhenti menangis malam ini."],
+  50:["Every child deserves a good education.","Setiap anak berhak mendapatkan pendidikan yang baik."],
+  // TUBUH
+  56:["My head hurts, I think I have a fever.","Kepala saya sakit, sepertinya saya demam."],
+  57:["Your hair looks really nice today!","Rambutmu terlihat sangat bagus hari ini!"],
+  58:["My eye is red — I think I need to see a doctor.","Mata saya merah — sepertinya saya perlu ke dokter."],
+  59:["Can you speak louder? My ear hurts.","Bisakah kamu bicara lebih keras? Telinga saya sakit."],
+  60:["My nose is runny because of the cold.","Hidung saya meler karena pilek."],
+  61:["Open your mouth wide and say 'aah'.","Buka mulutmu lebar dan katakan 'aah'."],
+  62:["I have a toothache — need to see the dentist.","Gigi saya sakit — harus ke dokter gigi."],
+  63:["She has a stiff neck from sitting too long.","Lehernya kaku karena terlalu lama duduk."],
+  64:["My shoulder is sore from carrying that bag.","Bahu saya pegal karena membawa tas itu."],
+  65:["He broke his arm playing football.","Lengannya patah saat bermain sepak bola."],
+  66:["Wash your hands before eating!","Cuci tanganmu sebelum makan!"],
+  67:["He pointed his finger at the board.","Dia menunjuk papan tulis dengan jarinya."],
+  68:["He got a tattoo on his chest.","Dia mendapatkan tato di dadanya."],
+  69:["My stomach is growling — I'm really hungry.","Perut saya keroncongan — saya sangat lapar."],
+  70:["My back hurts from sitting all day.","Punggung saya sakit karena duduk seharian."],
+  71:["She hurt her leg during the game.","Kakinya terluka saat pertandingan."],
+  72:["My knee aches when it rains.","Lutut saya sakit ketika hujan."],
+  73:["Take off your shoes before entering the house.","Lepaskan sepatumu sebelum masuk rumah."],
+  74:["Exercise is good for your heart.","Olahraga baik untuk jantungmu."],
+  75:["I feel sick — can I go home early?","Saya merasa sakit — bolehkah saya pulang lebih awal?"],
+  76:["She has a fever so she stayed home.","Dia demam jadi dia di rumah saja."],
+  77:["Cover your mouth when you cough!","Tutup mulutmu saat batuk!"],
+  78:["I have a headache — can I have some water?","Saya sakit kepala — boleh minta air?"],
+  79:["Did you take your medicine this morning?","Apakah kamu sudah minum obatmu pagi ini?"],
+  80:["He was rushed to the hospital last night.","Dia dibawa ke rumah sakit tadi malam."],
+  // MAKANAN
+  86:["I can't eat without rice — it's a habit!","Saya tidak bisa makan tanpa nasi — sudah kebiasaan!"],
+  87:["Do you want toast or rice for breakfast?","Kamu mau roti panggang atau nasi untuk sarapan?"],
+  88:["How do you like your egg — fried or boiled?","Kamu suka telur seperti apa — goreng atau rebus?"],
+  89:["This grilled chicken smells amazing!","Ayam bakar ini aromanya luar biasa!"],
+  90:["What kind of fish do you usually eat?","Ikan jenis apa yang biasanya kamu makan?"],
+  91:["I'm trying to eat less meat this month.","Saya sedang berusaha makan lebih sedikit daging bulan ini."],
+  92:["Eat your vegetables — they're good for you!","Makan sayuranmu — itu baik untukmu!"],
+  93:["Which fruit do you like most — mango or apple?","Buah apa yang paling kamu suka — mangga atau apel?"],
+  94:["This noodle soup is perfect for rainy days.","Sup mie ini sempurna untuk hari hujan."],
+  95:["This soup is too salty for me.","Sup ini terlalu asin untukku."],
+  96:["Stop eating snacks before dinner!","Berhenti makan camilan sebelum makan malam!"],
+  97:["Save room for dessert — we have ice cream!","Sisakan ruang untuk makanan penutup — ada es krim!"],
+  98:["What do you usually have for breakfast?","Apa yang biasanya kamu makan untuk sarapan?"],
+  99:["Let's grab lunch together — I know a good place.","Ayo makan siang bersama — saya tahu tempat yang enak."],
+  100:["Are you free for dinner tonight?","Apakah kamu bebas untuk makan malam malam ini?"],
+  101:["Drink more water — it's good for your skin.","Minum lebih banyak air — bagus untuk kulitmu."],
+  102:["She drinks warm milk every night before bed.","Dia minum susu hangat setiap malam sebelum tidur."],
+  103:["This orange juice is freshly squeezed!","Jus jeruk ini baru saja diperas!"],
+  104:["Do you take your coffee with sugar?","Apakah kamu minum kopi dengan gula?"],
+  105:["Would you like some tea? It helps you relax.","Mau minum teh? Itu membantu kamu rileks."],
+  // RUMAH
+  116:["Their house is the biggest on the street.","Rumah mereka adalah yang terbesar di jalan ini."],
+  117:["Which room do you sleep in?","Kamu tidur di kamar yang mana?"],
+  118:["My bedroom is messy — I need to clean it.","Kamar tidur saya berantakan — saya perlu membersihkannya."],
+  119:["The bathroom is occupied — please wait.","Kamar mandi sedang dipakai — mohon tunggu."],
+  120:["Something smells good — are you cooking in the kitchen?","Ada yang harum — kamu memasak di dapur?"],
+  121:["Let's sit in the living room and chat.","Ayo duduk di ruang tamu dan mengobrol."],
+  122:["Please close the door — it's cold outside.","Tolong tutup pintunya — di luar dingin."],
+  123:["Open the window — it's too hot in here.","Buka jendelanya — di sini terlalu panas."],
+  124:["The floor is wet — be careful not to slip!","Lantainya basah — hati-hati jangan sampai terpeleset!"],
+  129:["Put your bag on the table, not the floor.","Taruh tasmu di meja, bukan di lantai."],
+  130:["Pull up a chair and sit with us!","Ambil kursi dan duduklah bersama kami!"],
+  131:["I haven't made my bed yet this morning.","Saya belum merapikan tempat tidur pagi ini."],
+  132:["Come sit on the sofa — it's very comfortable.","Ayo duduk di sofa — sangat nyaman."],
+  133:["Turn off the lamp when you leave the room.","Matikan lampunya saat kamu keluar kamar."],
+  134:["Turn on the fan — I'm sweating!","Nyalakan kipas anginnya — saya berkeringat!"],
+  135:["Is there any food left in the refrigerator?","Apakah masih ada makanan di dalam kulkas?"],
+  // PAKAIAN
+  146:["That shirt looks great on you!","Kemeja itu terlihat sangat bagus di kamu!"],
+  147:["Can I borrow your t-shirt for today?","Boleh saya pinjam kaos kamu untuk hari ini?"],
+  148:["These pants are too tight — I need a bigger size.","Celana ini terlalu ketat — saya butuh ukuran yang lebih besar."],
+  154:["My shoes are dirty from walking in the rain.","Sepatu saya kotor karena berjalan di hujan."],
+  157:["Don't forget your hat — the sun is really hot!","Jangan lupa topimu — mataharinya sangat terik!"],
+  160:["Did you check my bag? I think I left my phone in it.","Sudahkah kamu cek tasku? Saya rasa HP saya ada di sana."],
+  161:["I can't find my wallet — have you seen it?","Saya tidak bisa menemukan dompet saya — kamu melihatnya?"],
+  163:["What time is it? My watch stopped working.","Jam berapa sekarang? Jam tangan saya berhenti bekerja."],
+  // PEKERJAAN
+  166:["What's your job? Do you enjoy it?","Apa pekerjaanmu? Apakah kamu menyukainya?"],
+  168:["I'll be at the office until late tonight.","Saya akan di kantor sampai larut malam ini."],
+  169:["My manager gave me a lot of work today.","Manajer saya memberi saya banyak pekerjaan hari ini."],
+  170:["All employees must wear ID badges.","Semua karyawan harus memakai lencana ID."],
+  172:["My teacher always makes class fun.","Guru saya selalu membuat kelas menjadi menyenangkan."],
+  186:["Did you get your salary this month?","Apakah kamu sudah mendapatkan gaji bulan ini?"],
+  187:["The meeting starts at 9 — don't be late!","Rapatnya mulai jam 9 — jangan telat!"],
+  190:["The deadline is tomorrow — we need to hurry!","Batas waktunya besok — kita harus bergegas!"],
+  // SEKOLAH
+  191:["Which school do you go to?","Kamu sekolah di mana?"],
+  193:["The student asked a really smart question.","Murid itu mengajukan pertanyaan yang sangat cerdas."],
+  195:["Have you finished your homework yet?","Apakah kamu sudah selesai mengerjakan PR?"],
+  196:["I stayed up all night studying for the exam.","Saya begadang semalam untuk belajar ujian."],
+  197:["What grade did you get on the test?","Nilai berapa yang kamu dapatkan di tes itu?"],
+  // TEKNOLOGI
+  211:["My phone battery died — can I borrow your charger?","Baterai HP saya habis — boleh pinjam charger kamu?"],
+  212:["My computer is running really slow today.","Komputer saya berjalan sangat lambat hari ini."],
+  213:["The internet is down — I can't do anything!","Internetnya mati — saya tidak bisa melakukan apa-apa!"],
+  214:["Check your email — I sent you something important.","Cek emailmu — saya mengirimmu sesuatu yang penting."],
+  216:["Which app do you use for online shopping?","Aplikasi apa yang kamu gunakan untuk belanja online?"],
+  217:["Don't forget your password — write it down somewhere.","Jangan lupakan kata sandimu — tulis di suatu tempat."],
+  225:["The wifi is really slow here — let's move.","Wifinya sangat lambat di sini — ayo pindah."],
+  // TRANSPORTASI
+  231:["His car broke down on the highway.","Mobilnya mogok di jalan tol."],
+  232:["The bus is late again — as usual!","Busnya terlambat lagi — seperti biasa!"],
+  233:["The train leaves at 7 — we should hurry.","Keretanya berangkat jam 7 — kita harus bergegas."],
+  234:["Have you ever been on an airplane before?","Pernahkah kamu naik pesawat sebelumnya?"],
+  237:["I prefer cycling to work — it's healthier.","Saya lebih suka bersepeda ke tempat kerja — lebih sehat."],
+  238:["Let's take a taxi — it's raining outside.","Ayo naik taksi — di luar hujan."],
+  241:["Did you buy the ticket yet?","Apakah kamu sudah membeli tiketnya?"],
+  243:["We need to be at the airport two hours early.","Kita harus tiba di bandara dua jam lebih awal."],
+  // ALAM
+  251:["The sun is so bright today — bring your sunglasses.","Matahari sangat terang hari ini — bawa kacamata hitammu."],
+  256:["Bring an umbrella — it looks like rain.","Bawa payung — sepertinya akan hujan."],
+  257:["Close the window — the wind is too strong.","Tutup jendelanya — anginnya terlalu kencang."],
+  260:["Look! There's a rainbow after the rain!","Lihat! Ada pelangi setelah hujan!"],
+  263:["Have you ever climbed a mountain before?","Pernahkah kamu mendaki gunung sebelumnya?"],
+  265:["Let's go to the beach this weekend!","Ayo pergi ke pantai akhir pekan ini!"],
+  // HEWAN
+  271:["My dog always greets me at the door.","Anjing saya selalu menyambutku di pintu."],
+  272:["The cat knocked everything off my table!","Kucing itu menendang semua benda dari mejaku!"],
+  278:["I saw an elephant at the zoo — it was huge!","Saya melihat gajah di kebun binatang — sangat besar!"],
+  // WAKTU
+  310:["What are your plans for today?","Apa rencanamu hari ini?"],
+  311:["Let's meet tomorrow at the coffee shop.","Ayo bertemu besok di kedai kopi."],
+  312:["I forgot to call him yesterday — my bad!","Saya lupa meneleponnya kemarin — salah saya!"],
+  313:["I feel most productive in the morning.","Saya merasa paling produktif di pagi hari."],
+  314:["I can never sleep early at night.","Saya tidak pernah bisa tidur awal di malam hari."],
+  // TEMPAT
+  321:["That restaurant has the best fried rice in town.","Restoran itu memiliki nasi goreng terbaik di kota."],
+  323:["Let's stop at the bank before going home.","Ayo mampir ke bank sebelum pulang."],
+  324:["The kids are playing at the park.","Anak-anak sedang bermain di taman."],
+  328:["Want to go to the mall this afternoon?","Mau pergi ke mall sore ini?"],
+  330:["The market is crowded every Sunday morning.","Pasar sangat ramai setiap Minggu pagi."],
+  // SIFAT
+  336:["Wow, that's a really big pizza!","Wow, itu pizza yang sangat besar!"],
+  337:["This room is too small for all of us.","Ruangan ini terlalu kecil untuk kita semua."],
+  343:["Slow down! You're driving too fast.","Pelan-pelan! Kamu mengemudi terlalu cepat."],
+  347:["You did a good job today — well done!","Kamu melakukan pekerjaan yang baik hari ini — bagus!"],
+  348:["That's a bad idea — let's think of something better.","Itu ide yang buruk — mari pikirkan sesuatu yang lebih baik."],
+  349:["Wow, you look beautiful today!","Wow, kamu terlihat cantik hari ini!"],
+  354:["Don't worry — this is an easy question.","Jangan khawatir — ini pertanyaan yang mudah."],
+  355:["This is the most difficult test I've ever taken.","Ini adalah ujian paling sulit yang pernah saya ikuti."],
+  360:["She's so smart — she solved it in seconds.","Dia sangat pintar — menyelesaikannya dalam hitungan detik."],
+  363:["Stop being lazy and do your homework!","Berhenti malas-malasan dan kerjakan PR-mu!"],
+  // KATA KERJA
+  366:["What do you want to eat for lunch?","Kamu mau makan apa untuk makan siang?"],
+  367:["Drink some water — you look dehydrated.","Minum air — kamu terlihat kekurangan cairan."],
+  368:["I couldn't sleep last night — too much on my mind.","Saya tidak bisa tidur tadi malam — terlalu banyak pikiran."],
+  369:["Let's walk to the store — it's not that far.","Ayo jalan kaki ke toko — tidak terlalu jauh."],
+  370:["Run! The bus is about to leave!","Lari! Busnya akan segera berangkat!"],
+  371:["Are you ready to go? Everyone's waiting.","Apakah kamu siap pergi? Semua orang menunggu."],
+  372:["Please come to my party on Saturday!","Tolong datang ke pesta saya hari Sabtu!"],
+  379:["Where did you buy those shoes? They're amazing!","Di mana kamu membeli sepatu itu? Keren banget!"],
+  381:["How do you want to pay — cash or card?","Kamu mau bayar pakai apa — tunai atau kartu?"],
+  384:["Have you read this book? It's really good.","Apakah kamu sudah membaca buku ini? Sangat bagus."],
+  385:["Write down your number so I can call you.","Tulis nomormu agar saya bisa menghubungimu."],
+  386:["Can you speak slower? I can't understand.","Bisakah kamu berbicara lebih pelan? Saya tidak mengerti."],
+  387:["Listen carefully — I'll only say this once.","Dengarkan baik-baik — saya hanya akan mengatakannya sekali."],
+  388:["What are you watching? Can I join?","Kamu sedang menonton apa? Boleh saya ikut?"],
+  391:["You can learn anything if you're consistent.","Kamu bisa belajar apa saja jika konsisten."],
+  393:["Can you help me carry these groceries?","Bisakah kamu membantu saya membawa belanjaan ini?"],
+  394:["Don't be afraid to ask if you don't understand.","Jangan takut bertanya jika kamu tidak mengerti."],
+  396:["I've been looking for my keys everywhere!","Saya sudah mencari kunci saya ke mana-mana!"],
+  398:["Just try it — you'll never know if you don't.","Coba saja — kamu tidak akan tahu kalau tidak mencoba."],
+  // BELANJA
+  421:["Do you have enough money to pay?","Apakah kamu punya cukup uang untuk membayar?"],
+  422:["The price is too high — can you give a discount?","Harganya terlalu tinggi — bisakah memberi diskon?"],
+  423:["This jacket is so cheap — only 50 thousand!","Jaket ini sangat murah — hanya 50 ribu!"],
+  424:["That bag is too expensive for me.","Tas itu terlalu mahal untuk saya."],
+  425:["There's a 50% discount at the mall today!","Ada diskon 50% di mall hari ini!"],
+  426:["Keep the receipt in case you want to return it.","Simpan struknya kalau kamu mau menukarnya."],
+  427:["Sorry, I only have cash — do you accept it?","Maaf, saya hanya punya uang tunai — apakah diterima?"],
+  429:["I love shopping on Sundays with my family.","Saya suka belanja hari Minggu bersama keluarga."],
+  430:["The cashier gave me the wrong change.","Kasir memberi saya uang kembalian yang salah."],
+  // OLAHRAGA
+  442:["Do you play soccer on weekends?","Apakah kamu main sepak bola di akhir pekan?"],
+  444:["Swimming is great for your whole body.","Renang sangat baik untuk seluruh tubuhmu."],
+  446:["Let's play badminton after work today!","Ayo main bulu tangkis sepulang kerja hari ini!"],
+  449:["We went hiking last weekend — so refreshing!","Kami mendaki gunung akhir pekan lalu — sangat menyegarkan!"],
+  453:["I love traveling — every trip teaches me something.","Saya suka travelling — setiap perjalanan mengajarkan sesuatu."],
+  // LAINNYA
+  456:["Yes, I totally agree with you!","Ya, saya sepenuhnya setuju dengan kamu!"],
+  457:["No, that's not what I said.","Tidak, itu bukan yang saya katakan."],
+  458:["Maybe we can go there next week?","Mungkin kita bisa ke sana minggu depan?"],
+  459:["Could you please help me with this?","Bisakah kamu tolong membantu saya dengan ini?"],
+  460:["I'm so sorry — I didn't mean to hurt you.","Saya sangat minta maaf — saya tidak bermaksud menyakitimu."],
+  461:["Come here! Look at this!","Ke sini! Lihat ini!"],
+  462:["Wait for me there — I'll be right back.","Tunggu saya di sana — saya akan segera kembali."],
+  465:["Who told you that? Was it my sister?","Siapa yang bilang itu padamu? Apakah kakak/adik perempuanku?"],
+  466:["What are you doing right now?","Kamu sedang apa sekarang?"],
+  467:["Where are you going? Can I come along?","Kamu mau ke mana? Boleh saya ikut?"],
+  468:["When did you get here? I didn't see you come in.","Kapan kamu tiba? Saya tidak melihatmu masuk."],
+  469:["Why didn't you tell me earlier?","Mengapa kamu tidak memberitahu saya lebih awal?"],
+  470:["How did you do that so fast?","Bagaimana kamu melakukan itu begitu cepat?"],
+  482:["I'm very grateful for your help.","Saya sangat berterima kasih atas bantuanmu."],
+  483:["She always arrives on time — always!","Dia selalu tiba tepat waktu — selalu!"],
+  484:["I've never tried durian before.","Saya belum pernah mencoba durian sebelumnya."],
+  489:["Are you really sure about this decision?","Apakah kamu benar-benar yakin dengan keputusan ini?"],
+  490:["Of course I'll help you — just ask!","Tentu saja saya akan membantumu — tinggal minta!"],
+};
+function getExample(no,word,meaning){
+  if(examples[no]) return examples[no];
+  const w=word.toLowerCase();
+  const m=meaning.toLowerCase();
+  const templates=[
+    [`She has beautiful ${w}.`,`Dia memiliki ${m} yang indah.`],
+    [`The ${w} is very important in our life.`,`${meaning} sangat penting dalam kehidupan kita.`],
+    [`He showed me his ${w} yesterday.`,`Dia menunjukkan ${m}-nya kemarin.`],
+    [`Can you see the ${w} over there?`,`Bisakah kamu melihat ${m} di sana?`],
+    [`We learned about ${w} in school today.`,`Kami belajar tentang ${m} di sekolah hari ini.`],
+    [`This ${w} belongs to my friend.`,`${meaning} ini milik teman saya.`],
+    [`I always remember to ${w} every morning.`,`Saya selalu ingat untuk ${m} setiap pagi.`],
+    [`They were surprised by the ${w}.`,`Mereka terkejut dengan ${m} itu.`],
+    [`My mother taught me about ${w}.`,`Ibu saya mengajariku tentang ${m}.`],
+    [`The ${w} made everyone smile.`,`${meaning} itu membuat semua orang tersenyum.`],
+    [`It is important to ${w} every day.`,`Penting untuk ${m} setiap hari.`],
+    [`Have you ever seen a ${w} like this?`,`Pernahkah kamu melihat ${m} seperti ini?`],
+    [`We need to take care of our ${w}.`,`Kita perlu merawat ${m} kita.`],
+    [`The teacher explained what ${w} means.`,`Guru menjelaskan apa arti ${m}.`],
+    [`My favorite thing is the ${w}.`,`Hal favorit saya adalah ${m}.`],
+  ];
+  return templates[no % templates.length];
+}
+
+function renderCards(list){
+  const g=document.getElementById('grid');
+  g.innerHTML='';
+  document.getElementById('countLabel').textContent=list.length;
+  list.forEach(([no,word,pron,meaning,cat])=>{
+    const isFav=favorites.includes(no);
+    const c=document.createElement('div');
+    c.className='card'+(isFav?' favorited':'');
+    c.innerHTML=`
+      <div class="front">
+        <div class="card-top"><span class="card-num">#${no}</span><span class="card-hint">ketuk ▶</span></div>
+        <div>
+          <div class="cat-badge">${cat}</div>
+          <div class="card-word">${word}</div>
+          <div class="card-pron">/${pron}/</div>
+          <div class="card-actions">
+            <button class="speak-btn" onclick="event.stopPropagation();speak('${word.replace(/'/g,"\\'")}')">🔊</button>
+            <button class="fav-btn" onclick="event.stopPropagation();toggleFav(${no},this)">${isFav?'⭐':'☆'}</button>
+            <button class="detail-btn" onclick="event.stopPropagation();showDetail(${no})">ℹ️</button>
+          </div>
+        </div>
+      </div>
+      <div class="back" style="display:none">
+        <div class="card-sub">#${no} • ${word}</div>
+        <div>
+          <div class="card-meaning">${meaning}</div>
+          <div class="card-sub" style="font-style:italic">/${pron}/</div>
+          <div class="card-actions">
+            <button class="speak-btn" onclick="event.stopPropagation();speak('${word.replace(/'/g,"\\'")}')">🔊</button>
+            <button class="fav-btn" onclick="event.stopPropagation();toggleFav(${no},this)">${isFav?'⭐':'☆'}</button>
+            <button class="detail-btn" onclick="event.stopPropagation();showDetail(${no})">ℹ️</button>
+          </div>
+        </div>
+      </div>`;
+    c.addEventListener('click',()=>{
+      const f=c.querySelector('.front'),b=c.querySelector('.back'),fl=c.classList.toggle('flipped');
+      f.style.display=fl?'none':'block';b.style.display=fl?'block':'none';
+    });
+    g.appendChild(c);
+  });
+}
+function filterCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const cat=document.getElementById('catSelect').value;
+  let list=vocab;
+  if(cat!=='all') list=list.filter(v=>v[4]===cat);
+  if(q) list=list.filter(v=>v[1].toLowerCase().includes(q)||v[3].toLowerCase().includes(q));
+  renderCards(list);
+}
+
+// ============ FAVORIT ============
+function toggleFav(no,btn){
+  const idx=favorites.indexOf(no);
+  if(idx===-1){favorites.push(no);}else{favorites.splice(idx,1);}
+  localStorage.setItem('favs',JSON.stringify(favorites));
+  document.querySelectorAll('.fav-btn').forEach(b=>{});
+  filterCards();
+}
+
+// ============ DETAIL ============
+function showDetail(no){
+  const v=vocab.find(x=>x[0]===no);
+  if(!v) return;
+  currentDetail=v;
+  const [,word,pron,meaning,cat]=v;
+  const ex=getExample(no,word,meaning);
+  document.getElementById('dWord').textContent=word;
+  document.getElementById('dPron').textContent='/'+pron+'/';
+  document.getElementById('dMeaning').textContent=meaning;
+  document.getElementById('dCat').textContent=cat;
+  document.getElementById('dType').textContent=wordType(cat);
+  document.getElementById('dExample').textContent=ex[0];
+  document.getElementById('dExampleID').textContent='🇮🇩 '+ex[1];
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeDetail(){document.getElementById('detailModal').classList.remove('show');}
+
+// ============ SUARA ============
+function speak(text){
+  if(!window.speechSynthesis) return alert('Browser tidak mendukung fitur suara.');
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US';u.rate=0.9;u.pitch=1;
+  window.speechSynthesis.speak(u);
+}
+
+// ============ DOWNLOAD ============
+function downloadCSV(){
+  let csv="\uFEFF"+"No;Kata Inggris;Cara Baca;Arti Indonesia;Kategori\n";
+  vocab.forEach(([no,word,pron,meaning,cat])=>{csv+=`${no};"${word}";"${pron}";"${meaning}";"${cat}"\n`;});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='kamus-1000-kata.csv';a.click();
+}
+function downloadPDF(){
+  const w=window.open('','_blank');
+  let rows='';
+  vocab.forEach(([no,word,pron,meaning,cat])=>{
+    rows+=`<tr><td>${no}</td><td><b>${word}</b></td><td style="color:#e94560;font-style:italic">${pron}</td><td>${meaning}</td><td><span class="badge">${cat}</span></td></tr>`;
+  });
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Kamus 1000 Kata</title>
+  <style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h1{color:#e94560;text-align:center;}p{text-align:center;color:#888;font-size:11px;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#e94560;color:white;padding:8px;text-align:left;}td{padding:6px 8px;border-bottom:1px solid #eee;}tr:nth-child(even) td{background:#f9f9f9;}.badge{background:#fff3e0;color:#e67e22;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;}</style>
+  </head><body><h1>📖 Kamus 1000 Kosakata Bahasa Inggris</h1><p>Lengkap dengan Cara Baca & Arti Bahasa Indonesia</p>
+  <table><thead><tr><th>No</th><th>Kata Inggris</th><th>Cara Baca</th><th>Arti Indonesia</th><th>Kategori</th></tr></thead><tbody>${rows}</tbody></table>
+  <script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+// ============ KUIS ============
+function toggleCatSelect(){
+  const w=document.getElementById('catSelectWrap');
+  w.style.display=w.style.display==='block'?'none':'block';
+}
+function startQuizCat(){
+  const cat=document.getElementById('quizCatSelect').value;
+  const pool=vocab.filter(v=>v[4]===cat);
+  if(pool.length<4){alert('Kata di kategori ini terlalu sedikit untuk kuis.');return;}
+  startQuizWithPool('en',pool);
+}
+function startQuiz(m){startQuizWithPool(m,vocab);}
+function startQuizWithPool(m,pool){
+  mode=m;questions=shuffle(pool).slice(0,Math.min(TOTAL,pool.length));
+  qIndex=0;benar=0;salah=0;
+  document.getElementById('modeScreen').style.display='none';
+  document.getElementById('quizActive').style.display='block';
+  document.getElementById('resultScreen').style.display='none';
+  loadQuestion();
+}
+function loadQuestion(){
+  answered=false;clearInterval(timerInterval);
+  const q=questions[qIndex];
+  const isEN=mode==='en'||(mode==='mix'&&Math.random()>0.5);
+  const pct=Math.round((qIndex/questions.length)*100);
+  document.getElementById('progText').textContent=`Soal ${qIndex+1}/${questions.length}`;
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progBar').style.width=pct+'%';
+  document.getElementById('scoreBenar').textContent=benar;
+  document.getElementById('scoreSalah').textContent=salah;
+  document.getElementById('qLabel').textContent=isEN?'🇺🇸 Apa artinya dalam Bahasa Indonesia?':'🇮🇩 Apa kata Bahasa Inggrisnya?';
+  document.getElementById('qWord').textContent=isEN?q[1]:q[3];
+  document.getElementById('qPron').textContent=isEN?'/'+q[2]+'/':'';
+  correctAnswer=isEN?q[3]:q[1];
+  const pool=vocab.filter(v=>v[0]!==q[0]);
+  const opts=shuffle([correctAnswer,...shuffle(pool).slice(0,3).map(v=>isEN?v[3]:v[1])]);
+  const grid=document.getElementById('optionsGrid');
+  grid.innerHTML='';
+  opts.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';btn.textContent=opt;
+    btn.onclick=()=>answer(btn,opt,correctAnswer,q);
+    grid.appendChild(btn);
+  });
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('nextBtn').disabled=true;
+  timeLeft=TIME;updateTimer();
+  timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);if(!answered)timeUp(q);}},1000);
+}
+function updateTimer(){
+  document.getElementById('timerNum').textContent=timeLeft;
+  const b=document.getElementById('timerBar');
+  b.style.width=(timeLeft/TIME)*100+'%';
+  b.style.background=timeLeft>5?'#2ecc71':timeLeft>3?'#f5a623':'#e94560';
+}
+function answer(btn,chosen,correct,q){
+  if(answered)return;answered=true;clearInterval(timerInterval);
+  document.querySelectorAll('.opt-btn').forEach(b=>{b.disabled=true;if(b.textContent===correct)b.classList.add('correct');});
+  const fb=document.getElementById('feedback');
+  if(chosen===correct){
+    btn.classList.add('correct');benar++;
+    fb.textContent='✅ Benar! +1';fb.className='feedback correct';
+    // update stats benar
+    if(!quizStats[q[0]]) quizStats[q[0]]={w:0,r:0};
+    quizStats[q[0]].r=(quizStats[q[0]].r||0)+1;
+  } else {
+    btn.classList.add('wrong');salah++;
+    fb.textContent='❌ Salah! Jawaban: '+correct;fb.className='feedback wrong';
+    if(!quizStats[q[0]]) quizStats[q[0]]={w:0,r:0};
+    quizStats[q[0]].w=(quizStats[q[0]].w||0)+1;
+  }
+  localStorage.setItem('qstats',JSON.stringify(quizStats));
+  document.getElementById('nextBtn').disabled=false;
+}
+function timeUp(q){
+  answered=true;salah++;
+  document.querySelectorAll('.opt-btn').forEach(b=>{b.disabled=true;if(b.textContent===correctAnswer)b.classList.add('reveal');});
+  const fb=document.getElementById('feedback');
+  fb.textContent='⏰ Waktu habis! Jawaban: '+correctAnswer;fb.className='feedback wrong';
+  if(!quizStats[q[0]]) quizStats[q[0]]={w:0,r:0};
+  quizStats[q[0]].w=(quizStats[q[0]].w||0)+1;
+  localStorage.setItem('qstats',JSON.stringify(quizStats));
+  document.getElementById('nextBtn').disabled=false;
+}
+function nextQuestion(){qIndex++;if(qIndex>=questions.length)showResult();else loadQuestion();}
+function showResult(){
+  clearInterval(timerInterval);
+  document.getElementById('quizActive').style.display='none';
+  document.getElementById('resultScreen').style.display='block';
+  const pct=Math.round((benar/questions.length)*100);
+  document.getElementById('resultScore').textContent=benar+' / '+questions.length;
+  document.getElementById('resultDetail').textContent=`Benar: ${benar} | Salah: ${salah} | Akurasi: ${pct}%`;
+  const e=pct>=90?['🏆','Luar Biasa!','Kamu sangat menguasai kosakata ini!']:pct>=70?['🎉','Bagus Sekali!','Terus semangat belajar ya!']:pct>=50?['💪','Lumayan!','Masih bisa ditingkatkan!']:['📚','Jangan Menyerah!','Belajar lagi terus, pasti bisa!'];
+  document.getElementById('resultEmoji').textContent=e[0];
+  document.getElementById('resultTitle').textContent=e[1];
+  document.getElementById('resultSub').textContent=e[2];
+}
+function replayQuiz(){startQuiz(mode);}
+function backToMenu(){
+  clearInterval(timerInterval);
+  document.getElementById('modeScreen').style.display='block';
+  document.getElementById('quizActive').style.display='none';
+  document.getElementById('resultScreen').style.display='none';
+  document.getElementById('catSelectWrap').style.display='none';
+}
+function confirmExit(){clearInterval(timerInterval);document.getElementById('exitModal').classList.add('show');}
+function doExit(){document.getElementById('exitModal').classList.remove('show');backToMenu();}
+function cancelExit(){
+  document.getElementById('exitModal').classList.remove('show');
+  timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);if(!answered)timeUp(questions[qIndex]);}},1000);
+}
+
+// ============ HAFALAN ============
+function initHafalan(){
+  const cat=document.getElementById('hafalanCat').value;
+  if(cat==='fav') hafalanList=vocab.filter(v=>favorites.includes(v[0]));
+  else if(cat==='all') hafalanList=shuffle([...vocab]);
+  else hafalanList=shuffle(vocab.filter(v=>v[4]===cat));
+  if(hafalanList.length===0){hafalanList=vocab;alert('Tidak ada kata di filter ini, menampilkan semua.');}
+  hafalanIdx=0;hafalanShown=false;
+  renderFlash();
+}
+function renderFlash(){
+  const v=hafalanList[hafalanIdx];
+  const isFav=favorites.includes(v[0]);
+  document.getElementById('flashNum').textContent='#'+v[0];
+  document.getElementById('flashCat').textContent=v[4];
+  document.getElementById('flashWord').textContent=v[1];
+  document.getElementById('flashPron').textContent='/'+v[2]+'/';
+  document.getElementById('flashMeaning').textContent=v[3];
+  document.getElementById('flashMeaning').style.display='none';
+  document.getElementById('flashHint').textContent='Ketuk untuk lihat arti ▼';
+  document.getElementById('flashCard').classList.remove('show-answer');
+  document.getElementById('flashProgress').textContent=(hafalanIdx+1)+' / '+hafalanList.length;
+  document.getElementById('favHafalanBtn').textContent=isFav?'⭐ Difavoritkan':'☆ Favorit';
+  hafalanShown=false;
+}
+function toggleFlash(){
+  hafalanShown=!hafalanShown;
+  document.getElementById('flashMeaning').style.display=hafalanShown?'block':'none';
+  document.getElementById('flashHint').textContent=hafalanShown?'Ketuk untuk sembunyikan ▲':'Ketuk untuk lihat arti ▼';
+  document.getElementById('flashCard').classList.toggle('show-answer',hafalanShown);
+}
+function nextFlash(){hafalanIdx=(hafalanIdx+1)%hafalanList.length;renderFlash();}
+function prevFlash(){hafalanIdx=(hafalanIdx-1+hafalanList.length)%hafalanList.length;renderFlash();}
+function markKnown(){
+  const no=hafalanList[hafalanIdx][0];
+  if(!knownWords.includes(no)) knownWords.push(no);
+  localStorage.setItem('known',JSON.stringify(knownWords));
+  nextFlash();
+}
+function toggleFavHafalan(){
+  const no=hafalanList[hafalanIdx][0];
+  const idx=favorites.indexOf(no);
+  if(idx===-1) favorites.push(no);else favorites.splice(idx,1);
+  localStorage.setItem('favs',JSON.stringify(favorites));
+  document.getElementById('favHafalanBtn').textContent=favorites.includes(no)?'⭐ Difavoritkan':'☆ Favorit';
+}
+
+// ============ PROGRESS ============
+function renderProgress(){
+  const total=vocab.length;
+  const known=knownWords.length;
+  const pct=Math.round((known/total)*100);
+  const deg=Math.round((pct/100)*360);
+
+  const cats=[...new Set(vocab.map(v=>v[4]))];
+  let catRows='';
+  cats.forEach(cat=>{
+    const catWords=vocab.filter(v=>v[4]===cat).map(v=>v[0]);
+    const catKnown=catWords.filter(no=>knownWords.includes(no)).length;
+    const catPct=catWords.length>0?Math.round((catKnown/catWords.length)*100):0;
+    catRows+=`<div class="prog-cat-row">
+      <span class="prog-cat-name">${cat}</span>
+      <div class="prog-cat-bar-wrap"><div class="prog-cat-bar" style="width:${catPct}%"></div></div>
+      <span class="prog-cat-pct">${catPct}%</span>
+    </div>`;
+  });
+
+  document.getElementById('progWrap').innerHTML=`
+    <div class="prog-card">
+      <div class="prog-title">🎯 Total Progress</div>
+      <div class="prog-circle-wrap">
+        <div class="prog-circle" style="background:conic-gradient(#f5a623 ${deg}deg, rgba(255,255,255,0.1) ${deg}deg)">
+          <span class="prog-pct">${pct}%</span>
+          <span class="prog-pct-label">Dikuasai</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:10px;">
+        <div class="badge green"><div class="badge-val">${known}</div><div class="badge-lbl">✅ Hafal</div></div>
+        <div class="badge red"><div class="badge-val">${total-known}</div><div class="badge-lbl">📖 Belum</div></div>
+        <div class="badge"><div class="badge-val">${favorites.length}</div><div class="badge-lbl">⭐ Favorit</div></div>
+      </div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-title">📂 Progress per Kategori</div>
+      ${catRows}
+    </div>
+    <button class="reset-prog-btn" onclick="resetProgress()">🗑️ Reset Progress Hafalan</button>`;
+}
+function resetProgress(){
+  if(confirm('Reset semua progress hafalan?')){
+    knownWords=[];localStorage.removeItem('known');renderProgress();
+  }
+}
+
+// ============ STATISTIK ============
+function renderStatistik(){
+  const totalKuis=Object.keys(quizStats).length;
+  let totalBenar=0,totalSalah=0;
+  Object.values(quizStats).forEach(s=>{totalBenar+=s.r||0;totalSalah+=s.w||0;});
+  const totalSoal=totalBenar+totalSalah;
+  const akurasi=totalSoal>0?Math.round((totalBenar/totalSoal)*100):0;
+
+  // Kata paling sering salah
+  const wrongList=Object.entries(quizStats)
+    .filter(([,s])=>s.w>0)
+    .sort((a,b)=>(b[1].w||0)-(a[1].w||0))
+    .slice(0,10);
+
+  let wrongRows='';
+  wrongList.forEach(([no,s])=>{
+    const v=vocab.find(x=>x[0]===parseInt(no));
+    if(v) wrongRows+=`<div class="wrong-word"><span class="wrong-word-text">${v[1]} — ${v[3]}</span><span class="wrong-count">${s.w}x salah</span></div>`;
+  });
+
+  document.getElementById('statWrap').innerHTML=`
+    <div class="stat-card">
+      <div class="stat-title">📊 Ringkasan Kuis</div>
+      <div class="stat-row"><span class="stat-label">Total soal dijawab</span><span class="stat-val">${totalSoal}</span></div>
+      <div class="stat-row"><span class="stat-label">✅ Benar</span><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${akurasi}%;background:linear-gradient(90deg,#27ae60,#2ecc71)"></div></div><span class="stat-val" style="color:#2ecc71">${totalBenar}</span></div>
+      <div class="stat-row"><span class="stat-label">❌ Salah</span><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${100-akurasi}%;background:linear-gradient(90deg,#c0392b,#e94560)"></div></div><span class="stat-val" style="color:#e94560">${totalSalah}</span></div>
+      <div class="stat-row"><span class="stat-label">🎯 Akurasi</span><span class="stat-val">${akurasi}%</span></div>
+      <div class="stat-row"><span class="stat-label">📝 Kata diuji</span><span class="stat-val">${totalKuis}</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">❌ 10 Kata Paling Sering Salah</div>
+      ${wrongRows||'<p style="color:rgba(255,255,255,0.4);font-size:13px;text-align:center;padding:10px">Belum ada data kuis. Mulai kuis dulu!</p>'}
+    </div>
+    <button class="clear-stat-btn" onclick="clearStats()">🗑️ Hapus Semua Statistik</button>`;
+}
+function clearStats(){
+  if(confirm('Hapus semua data statistik kuis?')){
+    quizStats={};localStorage.removeItem('qstats');renderStatistik();
+  }
+}
+
+// ============ INIT ============
+renderCards(vocab);
+initHafalan();
+</script>
+</body>
+</html>
